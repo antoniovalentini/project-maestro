@@ -1,0 +1,45 @@
+@startuml
+actor       User                      as user
+participant Api                       as api
+control     Engine                    as engine
+database    Definitions               as def
+database    Instances                 as inst
+queue       "Task Queue"              as tqueue
+collections "Task Workers"            as tworkers
+queue       "Notification Queue"      as nqueue
+collections "Notification Workers"    as nworkers
+
+user     -> api      : /start 
+api      -> engine   : Start
+engine   -> def      : Get definitions
+def      -> engine
+
+group Transaction
+engine   -> inst     : create instances
+engine   -> tqueue   : enqueue new task
+end
+
+engine   -> api      : result
+api      -> user     : result
+tqueue   -> tworkers : receive message
+tworkers -> inst     : Transition task \nto in-progress
+tworkers -> tworkers : Execute task
+tworkers -> nqueue   : Enqueue task complete \nnotification
+nqueue   -> nworkers : receive message
+nworkers -> engine   : evaluate next step
+engine   -> engine   : found next task
+
+group Transaction
+engine   -> inst     : create instances
+engine   -> tqueue   : enqueue new task
+end
+
+tqueue   -> tworkers : receive message
+tworkers -> inst     : Transition task \nto in-progress
+tworkers -> tworkers : Execute task
+tworkers -> nqueue   : Enqueue task complete \nnotification
+nqueue   -> nworkers : receive message
+nworkers -> engine   : evaluate next step
+engine   -> engine   : workflow complete
+engine   -> inst     : update state
+@enduml

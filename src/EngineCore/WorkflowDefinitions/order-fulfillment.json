@@ -1,0 +1,28 @@
+﻿{
+  "id": "order_fulfillment_1",
+  "version": "1",
+  "tasks": [
+    {
+      "type": "automated",
+      "name": "validate_order",
+      "nextTasks": ["process_payment"],
+      "root": true
+    },
+    {
+      "type": "automated",
+      "name": "process_payment",
+      "nextTasks": ["ship_order"]
+    },
+    {
+      "type": "human",
+      "name": "ship_order",
+      "assignedTo": "shipping_team",
+      "nextTasks": ["notify_customer"]
+    },
+    {
+      "type": "automated",
+      "name": "notify_customer",
+      "nextTasks": []
+    }
+  ]
+}
